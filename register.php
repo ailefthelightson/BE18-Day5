@@ -35,7 +35,7 @@ if(isset($_POST["register"])){
     }elseif(strlen($first_name)<3){
         $error=true;
         $fnameError = "first name must have at least 3 characters";
-    }elseif(preg_match("/^[a-zA-Z]+$/",$first_name)){
+    }elseif(!preg_match("/^[a-zA-Z]+$/",$first_name)){
         $error=true;
         $fnameError="first name must contain only letters and no spaces";
     }
@@ -46,13 +46,13 @@ if(isset($_POST["register"])){
     }elseif(strlen($last_name)<3){
         $error=true;
         $lnameError = "first name must have at least 3 characters";
-    }elseif(preg_match("/^[a-zA-Z]+$/",$last_name)){
+    }elseif(!preg_match("/^[a-zA-Z]+$/",$last_name)){
         $error=true;
         $lnameError="first name must contain only letters and no spaces";
     }
 
     if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
-        $error=$true;
+        $error=true;
         $emailError="Please enter a valid email address";
     }else{
         $query="SELECT email FROM users WHERE email = '$email' ";
@@ -78,6 +78,25 @@ if(isset($_POST["register"])){
     // <--security stuff -->
 
     $password = hash("sha256", $password);
+
+// $picture = file_upload($_FILES["picture"]);
+
+    if(!$error){
+$sql= "INSERT INTO users( `first_name`, `last_name`, `password`, `date_of_birth`, `email`, `picture`) VALUES ('$first_name','$last_name','$password','$date_of_birth','$email', '$picture->fileName')";
+
+$res=mysqli_query($connect, $sql);
+if($res){
+    $errType="success";
+    $errMsg = "Successfully registered, you are logged in now.";
+    $uploadError=($picture->error != 0) ? $picture->ErrorMessage : "";
+}
+
+    }else{
+        $errType="danger";
+        $errMsg = "Error - try later";
+        // $uploadError=($picture->error != 0) ? $picture->ErrorMessage : "";
+    
+    }
 }
 ?>
 
@@ -95,21 +114,34 @@ if(isset($_POST["register"])){
     <div class="container">
 <h1>REGISTRATION FORM</h1>
 
-    <form class="w-75" action="<?= htmlspecialchars($_SERVER['SCRIPT_NAME'])?>" enctype="multipart/form-data">
+<?php
+if(isset($errMsg)){
+    ?>
+
+
+<div class="alert alert-success" role="alert">
+  <?=$errMsg?>
+  <?=$uploadError?>
+</div>
+<?php 
+}
+?>
+
+    <form class="w-75" action="<?= htmlspecialchars($_SERVER['SCRIPT_NAME'])?>" enctype="multipart/form-data" method="post">
         <input type="text" placeholder="Please type your first name" class="form-control" name="first_name" value="<?=$first_name?>">
-        <span><?=$fnameError?></span>
+        <span class="text-danger"><?=$fnameError?></span>
 
         <input type="text" placeholder="Please type your last name" class="form-control" name="last_name" value="<?=$last_name?>">
-        <span><?=$lnameError?></span>
+        <span class="text-danger"><?=$lnameError?></span>
 
         <input type="email" placeholder="Please type your email" class="form-control" name="email" value="<?=$email?>">
-        <span><?=$emailError?></span>
+        <span class="text-danger"><?=$emailError?></span>
 
         <input type="password" placeholder="Please type your password" class="form-control" name="password">
-        <span><?=$passError?></span>
+        <span class="text-danger"><?=$passError?></span>
 
         <input type="date"  class="form-control" name="date_of_birth">
-        <span><?=$dateError?></span>
+        <span class="text-danger"><?=$dateError?></span>
 
         <input type="file"  class="form-control" name="picture">
         <input type="submit"  class="form-control" name="register" value="Register">
