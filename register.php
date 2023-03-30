@@ -3,6 +3,13 @@
 // echo $_SERVER['SCRIPT_NAME'];
 require_once "components/db_connect.php";
 require_once "components/file_upload.php";
+session_start();
+if(isset($_SESSION["user"])){
+    header("Location: home.php");
+}
+if(isset($_SESSION["adm"])){
+    header("Location: dashboard.php");
+}
 
 function cleanInput($param){
     $clean = trim($param);
